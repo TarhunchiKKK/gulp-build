@@ -26,7 +26,7 @@ const sourcemaps = require('gulp-sourcemaps');
 
 // исходные и конечные директории
 const paths = {
-    html:{
+    pages:{
         src: 'src/pages/**/*.html',
         dest: 'dist/pages/'
     },
@@ -40,45 +40,68 @@ const paths = {
     },
     images:{
         src: 'src/images/*',
-        dest: 'dist/images/'
+        dest: 'dist/img/'
     }
 };
 
-// директории для очистки
-const clean_paths = ['dist/css/*', 'dist/js/*', 'dist/pages/*'];
-
+/*------------------------------------------------------------------*/
 
 // очистка проекта
-function clean(){
-    return del([
-        paths.html.dest + '*',
-        paths.css.dest + '*',
-        paths.js.dest + '*',
-        // paths.images.dest + '*'
-    ]);
+const clean = gulp.series(cleanhtml, cleancss, cleanjs/*, cleanimg */);
+
+// очистка папки html-файлами
+function cleanhtml(){
+    return del(paths.pages.dest + '*');
 }
 
-function clean_html(){
-    return del(paths.html.dest + '*');
+// очистка папки css-файлами
+function cleancss(){
+    return del(paths.styles.dest + '*');
 }
 
-function clean_css(){
-    return del(paths.css.dest + '*');
+// очистка папки с js-файлами
+function cleanjs(){
+    return del(paths.scripts.dest + '*');
 }
 
-function clean_js(){
-    return del(paths.js.dest + '*');
-}
-
-function clean_img(){
+// очистка папки с изображениями
+function cleanimg(){
     return del(paths.images.dest + '*');
 }
 
+/*------------------------------------------------------------------*/
+
+
+// копирование html-страниц в папку dist 
+function copyhtml(){
+    return gulp.src(paths.pages.src)
+        .pipe(gulp.dest(paths.pages.dest));
+}
+
+// копирование и сжатие html-страниц в папку dist/pages
+function pages(){
+    return gulp.src(paths.pages.src)
+        .pipe(htmlmin({collapseWhitespace: true}))
+        .pipe(gulp.dest(paths.pages.dest));
+}
+
+/*------------------------------------------------------------------*/
+
+// сжатие и копирование изображений в папку dist/img
+function images(){
+    return gulp.src(paths.images.src)
+        .pipe(newer(paths.images.dest))
+        .pipe(imagemin())
+        .pipe(gulp.src(paths.images.dest));
+}
 
 
 
 exports.clean = clean;
-exports.clean_html = clean_html;
-exports.clean_css = clean_css;
-exports.clean_js = clean_js;
-exports.clean_img = clean_img;
+exports.cleanhtml = cleanhtml;
+exports.cleancss = cleancss;
+exports.cleanjs = cleanjs;
+exports.cleanimg = cleanimg;
+exports.copyhtml = copyhtml;
+exports.htmlmin = htmlmin;
+exports.pages = pages;
