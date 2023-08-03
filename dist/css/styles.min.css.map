@@ -1,0 +1,1 @@
+{"version":3,"sources":["s1.css","s2.css"],"names":[],"mappings":"AAAA;AACA;AACA;AACA;AACA;ACJA;AACA;AACA;AACA;AACA","file":"styles.min.css","sourcesContent":["p {\n  padding: 0;\n}\n/*# sourceMappingURL=s1.css.map */\n","h1 {\n  text-align: center;\n}\n/*# sourceMappingURL=s2.css.map */\n"]}

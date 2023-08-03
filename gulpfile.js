@@ -31,7 +31,7 @@ const paths = {
         dest: 'dist/pages/'
     },
     styles:{
-        src: 'src/styles/**/.scss',
+        src: ['src/styles/**/*.scss', 'src/styles/**/*.sass', 'src/styles/**/*.css'],
         dest: 'dist/css/'
     },
     scripts:{
@@ -78,11 +78,83 @@ function copyhtml(){
         .pipe(gulp.dest(paths.pages.dest));
 }
 
+// уменьшение html-страниц в конечой папке
+function minhtml(){
+    return gulp.src(paths.pages.dest + '*')
+        .pipe(htmlmin({collapseWhitespace: true}))
+        //.pipe(cleanhtml)
+        .pipe(gulp.dest(paths.pages.dest));
+}
+
+// обновление html-страниц (добавление)
+/* НЕ  ПРОВЕРЕНО*/
+function updatehtml(){
+    return gulp.src(paths.pages.src)
+        .pipe(newer(paths.pages.dest))
+    //    .pipe(htmlmin({collapseWhitespace: true}))
+        .pipe(gulp.dest(paths.pages.dest));
+}
+
 // копирование и сжатие html-страниц в папку dist/pages
-function pages(){
+function html(){
     return gulp.src(paths.pages.src)
         .pipe(htmlmin({collapseWhitespace: true}))
         .pipe(gulp.dest(paths.pages.dest));
+}
+
+/*------------------------------------------------------------------*/
+
+// слияние преобразованных css-файлов без минификации
+function copycss(){
+    return gulp.src(paths.styles.src)
+        // .pipe(sourcemaps.init())
+        .pipe(sass().on('error', sass.logError))
+        .pipe(autoprefixer({
+            cascade: false
+        }))    
+        // .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(paths.styles.dest));
+}
+
+// объединение css-файлов в 1
+const joincss = gulp.series(
+    function (){
+        return gulp.src(paths.styles.dest + '*.css')
+        .pipe(sourcemaps.init())
+        .pipe(concat('styles.min.css'),{
+            newLine: '\n\n\n'
+        })
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(paths.styles.dest));
+    },
+    function (){
+        return del([paths.styles.dest + '*', '!dist/css/styles.min.css', '!dist/css/styles.min.css.map']);
+    }
+);
+
+
+// минификация css-файла, находящегося в конечной папке стилей
+function mincss(){
+    return gulp.src(paths.styles.dest + '*')
+        .pipe(cleanCSS({
+            level: 2
+        }))
+        .pipe(gulp.dest(paths.styles.dest));
+}
+
+function css(){
+    return gulp.src(paths.styles.src)
+        .pipe(sourcemaps.init())
+        .pipe(sass().on('error', sass.logError))
+        .pipe(autoprefixer({
+            cascade: false
+        }))
+        .pipe(concat('styles.min.css'))
+        .pipe(cleanCSS({
+            level: 2
+        }))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(paths.styles.dest));
 }
 
 /*------------------------------------------------------------------*/
@@ -102,6 +174,14 @@ exports.cleanhtml = cleanhtml;
 exports.cleancss = cleancss;
 exports.cleanjs = cleanjs;
 exports.cleanimg = cleanimg;
+
 exports.copyhtml = copyhtml;
-exports.htmlmin = htmlmin;
-exports.pages = pages;
+exports.html = html;
+exports.minhtml = minhtml;
+exports.updatehtml = updatehtml;
+
+exports.copycss = copycss;
+exports.joincss = joincss;
+exports.mincss = mincss;
+exports.css = css;
+
