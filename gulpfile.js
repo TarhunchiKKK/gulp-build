@@ -96,7 +96,7 @@ function updatehtml(){
 }
 
 // копирование и сжатие html-страниц в папку dist/pages
-function html(){
+function pages(){
     return gulp.src(paths.pages.src)
         .pipe(htmlmin({collapseWhitespace: true}))
         .pipe(gulp.dest(paths.pages.dest));
@@ -142,7 +142,7 @@ function mincss(){
         .pipe(gulp.dest(paths.styles.dest));
 }
 
-function css(){
+function styles(){
     return gulp.src(paths.styles.src)
         .pipe(sourcemaps.init())
         .pipe(sass().on('error', sass.logError))
@@ -159,8 +159,46 @@ function css(){
 
 /*------------------------------------------------------------------*/
 
+
+const ts = gulp.series(
+    function(){
+        return del([paths.scripts.dest + '**/*.ts']);
+    },
+    function(){
+        return gulp.src(paths.scripts.src)
+        //    .pipe(sourcemaps.init())
+            .pipe(typescript({
+                noImplicitAny: true
+            }))
+            .pipe(babel({
+                presets: ['@babel/env']
+            }))
+        //    .pipe(sourcemaps.write('.'))
+            .pipe(gulp.dest(paths.scripts.dest));
+    }
+);
+
+
+function js(){                                 // конвертирование файлов  скриптов
+    return gulp.src(paths.scripts.src)                  // из источника
+//    .pipe(sourcemaps.init())                            // создать карту
+    .pipe(typescript({
+        noImplicitAny: true,
+        outFile: 'output.js'
+    })).on("error", () => {})
+    .pipe(babel({                                       // преобразование нового формата js
+        presets: ['@babel/env']
+    }))                                                 
+    //.pipe(uglify())                                     // сжатие файлов скриптов
+    .pipe(concat('app.min.js'))                        // слияние файлов в 1 файл
+//    .pipe(sourcemaps.write('.'))                        // запись карты вместе с 
+    .pipe(gulp.dest(paths.scripts.dest))                // поместить в конечную директорию
+}
+
+/*------------------------------------------------------------------*/
+
 // сжатие и копирование изображений в папку dist/img
-function images(){
+function img(){
     return gulp.src(paths.images.src)
         .pipe(newer(paths.images.dest))
         .pipe(imagemin())
@@ -176,12 +214,16 @@ exports.cleanjs = cleanjs;
 exports.cleanimg = cleanimg;
 
 exports.copyhtml = copyhtml;
-exports.html = html;
+exports.pages = pages;
 exports.minhtml = minhtml;
 exports.updatehtml = updatehtml;
 
 exports.copycss = copycss;
 exports.joincss = joincss;
 exports.mincss = mincss;
-exports.css = css;
+exports.styles = styles;
 
+exports.js = js;
+exports.ts = ts;
+
+exports.img = img;
